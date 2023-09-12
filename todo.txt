@@ -1,0 +1,33 @@
+graphs to do
+
+overall gender comparison
+  - stacked bar per season, reps + recettes
+  - could do a streamgraph of the same
+
+women play timeline, with colour coding for genre
+  - do it as a bubble timeline and make radius correspond to revenue in creation season (do rev as a percentage or total)
+  - do one agged over all time? probs doesn't make a ton of sense...just let the lines collapse
+
+top authors, reps + recettes, with perspective
+  - overall and by decade can do as circle packing
+  - want something to show ripple effect before and after creation, compared with similar men (genre)
+  - could do something bullseye like for after, but before is hard
+      - could do a sort of bastardized violin plot..recettes on one side, reps on the other..would have to transfrom to be %
+      - ...or maybe just a stream graph (with a vertical line)
+
+   - just circle packing overall?
+    - rec still need to be relative in some way
+    - keep within decades do
+        - play circle packing by delta expected??? doesn't take into account programmtic strategy though
+        - perc total b/c there might not be a ton of inflation?
+
+
+
+some  more affective ones
+- spiral bar for presence
+- circle packing for creations with a single season (rec) .. not women only
+
+
+do a bar graph of all authors to basically talk about programmatic strategies
+- compare avg expected vs avg how much they did
+    - goal is to basically show how much they were able to defy programmatic strategy
