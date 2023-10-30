@@ -170,22 +170,20 @@ app.controller('ctrl', function($scope, $window, $document) {
 
 
   //thing I eventually have to deal with - redrawing on scaling
-function timelineGroupIndivTimescale(data, id, height) {
+  //FIX THIS SO THAT IT'S SEASON WISE MAX PERC/VAL FOR RADIUS DUMBO
+function timelineGroupIndivTimescale(data, id, height, seasons) {
 
   var svg = d3.select("#" + id)
   .append("svg")
   .attr("width", w)
   .attr("height", height)
 
-  console.log(svg)
 
   let indiv_height = (height-2*t_margin)/data.main.length
   let m_r = (indiv_height - (2*indiv_padding))/2
-  console.log(data.max_r, data.main)
 
-  let get_r = function(r_val) {
-    console.log(r_val, data.max_r)
-    return (r_val/data.max_r)*m_r
+  let get_r = function(d) {
+    return (d.r_value/max_r)*m_r
   }
 
   var get_y = function(ind) {
@@ -330,7 +328,7 @@ function timelineGroupIndivTimescale(data, id, height) {
        .text(function(d){
           return d.label
        })
-       
+
 
     }
 
@@ -398,12 +396,238 @@ function timelineGroupIndivTimescale(data, id, height) {
       //this way of structuring currently includes nothing lines
       //I kinda like this for negative knowledge reasons
       //but possible remove later
-      timelineGroupIndivTimescale(rec_dat, "season-timeline-rec", 3000)
-      timelineGroupIndivTimescale(perc_dat, "season-timeline-perc", 3000)
+      timelineGroupIndivTimescale(rec_dat, "season-timeline-rec", 3000, d1.seasons)
+      timelineGroupIndivTimescale(perc_dat, "season-timeline-perc", 3000, d1.seasons)
+
+
+
+      //the timeline for the women authors and actresses
+      //this is cheating but I don't want to redo the csvs
+      let start_date = d1.seasons['1687-1688'].start
+      let end_date = d1.seasons['1792-1793'].end
+      let indiv_tl_height = 20
+      let bar_height = 14
+      let indiv_vert_padding = 3
+      let horiz_margin = 20
+      loadData(data_pref+ "actresses_length.json").then(function(d_c){
+      loadData(data_pref+ "authors_length.json").then(function(d_a){
+          //make the svg
+
+        let dc=d_c.data
+        let da = d_a.data
+
+        //god this is inefficient
+        for(let i=0;i<dc.length; i++){
+          dc[i].index=i
+        }
+
+        for(let i=0;i<da.length; i++){
+          da[i].index=i
+        }
+
+
+
+
+        let sing_tl_h = indiv_tl_height + 2*indiv_vert_padding
+
+        var svg = d3.select("#career-length-tl")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", (dc.length + da.length)*(sing_tl_h))
+
+
+        var get_x = d3.time.scale().domain([Date.parse(start_date), Date.parse(end_date)]).range([horiz_margin, w-horiz_margin])
+        var get_y = function(ind) {
+            return ind * sing_tl_h+ sing_tl_h/2
+        }
+
+
+        //start with the authors because they have the full timeline
+        var auth_timelines = svg.selectAll("g")
+          .data(da)
+          .enter()
+          .append("g")
+          .attr("class", "indiv-timeline")
+          .attr("class", "auth-tl")
+          .attr("height", indiv_tl_height + 2*indiv_vert_padding)
+          .attr("width", w)
+          .attr("id", function(d) {return "t-author-" + d.id})
+
+          //for auth timelines, can draw the full line (we have all the data)
+        var auth_lines = auth_timelines.append("line")
+          .style("stroke", "grey") //add main line
+          .style("stroke-width", 0.5)
+          .style("opacity", 0,8)
+          .attr("class", "timeline-line")
+          .attr("x1", horiz_margin)
+          .attr("x2", w-horiz_margin)
+          .attr("y1",  function(d){
+
+            return get_y(d.index)
+           })
+           .attr("y2",  function(d){
+             return get_y(d.index)
+            })
+          .style("z-index", -1)
+
+          var auth_ranges = auth_timelines
+          .append("rect")
+          .attr("x", function(d){
+            return get_x(Date.parse(d.start))
+          })
+          .attr("y", function(d){
+            return get_y(d.index)-bar_height/2
+          })
+          .attr("width", function(d){
+            if(d.start==d.end){
+              //total hack
+              return 1
+            }
+            return get_x(Date.parse(d.end))-get_x(Date.parse(d.start))
+          })
+          .attr("height", bar_height)
+          .attr("fill", 'green')
+          .attr("fill-opacity", 0.4)
+          .attr("stroke", 'green')
+          .append("title")
+          .text(function(d){
+            return `${d.nom} : ${d.start}-${d.end}`
+          })
+
+        var act_timelines = svg.selectAll("g")
+          .data(dc)
+          .enter()
+          .append("g")
+          .attr("class", "indiv-timeline")
+          .attr("class", "com-tl")
+          .attr("height", indiv_tl_height + 2*indiv_vert_padding)
+          .attr("width", w)
+          .attr("id", function(d) {return "t-actress-" + d.id})
+
+
+
+        //do the first half of the actress timelines
+        //for now, make red until 65
+
+        let no_dat_cutoff = get_x(Date.parse('1765-09-09'))
+
+        var act_no_data = act_timelines.append("line")
+        .style("stroke", "red") //add main line
+        .style("stroke-width", 0.5)
+        .style("opacity", 0,8)
+        .attr("class", "timeline-line-no-data")
+        .attr("x1", horiz_margin)
+        .attr("x2", no_dat_cutoff)
+        .attr("y1",  function(d){
+          return get_y(d.index)
+         })
+         .attr("y2",  function(d){
+           return get_y(d.index)
+          })
+        .style("z-index", -1)
+
+        var act_lines = act_timelines.append("line")
+        .style("stroke", "grey") //add main line
+        .style("stroke-width", 0.5)
+        .style("opacity", 0,8)
+        .attr("class", "timeline-line")
+        .attr("x1", no_dat_cutoff)
+        .attr("x2", w-horiz_margin)
+        .attr("y1",  function(d){
+          return get_y(d.index)
+         })
+         .attr("y2",  function(d){
+           return get_y(d.index)
+          })
+        .style("z-index", -1)
+
+
+
+        var act_ranges = act_timelines
+        .append("rect")
+        .attr("x", function(d){
+          return get_x(Date.parse(d.start))
+        })
+        .attr("y", function(d){
+          return get_y(d.index)-bar_height/2
+        })
+        .attr("width", function(d){
+          if(d.start==d.end){
+            //total hack
+            return 1
+          }
+          return get_x(Date.parse(d.end))-get_x(Date.parse(d.start))
+        })
+        .attr("height", bar_height)
+        .attr("fill", 'purple')
+        .attr("fill-opacity", 0.4)
+        .attr("stroke", 'purple')
+        .append("title")
+        .append("title")
+        .text(function(d){
+          return `${d.titre} ${d.pseudonyme} : ${d.start}-${d.end}`
+        })
+
+
+
+
+        //add the boxes in a not very d-3 ish way
+        /*for(let i=0;i<dc.length;i++) {
+          d3.select("t-author-" + dc[i].id)
+          .data(dc[i])
+          .append("g")
+          .attr("class", "career-range")
+          .append("rect")
+          .attr("x",function(d){
+            return d.start
+          })
+          .attr("y", get_y(dc))
+          .attr("width", get_x(dc[i].end)-get_x(dc[i].start))
+          .attr("height", bar_height)
+          .attr("fill", 'green')
+          .attr("fill-opacity", 0.4)
+          .attr("stroke", 'green')
+          .append("title")
+          .text(`${dc[i].nom}: ${dc[i].start}-${dc[i].end}`)
+        }*/
+
+        //jeez I need a better way of doing this
+
+        //add the boxes in a not very d-3 ish way
+        /*for(let i=0;i<da.length;i++) {
+          d3.select("t-actress-" + da[i].id)
+          .append("g")
+          .attr("class", "career-range")
+          .append("rect")
+          .attr("x",get_x(da[i].start))
+          .attr("y", get_y(da))
+          .attr("width", get_x(da[i].end)-get_x(da[i].start))
+          .attr("height", bar_height)
+          .attr("fill", 'purple')
+          .attr("fill-opacity", 0.4)
+          .attr("stroke", 'purple')
+          .append("title")
+          .text(`${da[i].nom}: ${da[i].start}-${da[i].end}`)
+        }*/
+
+
+
+
+
+
+        })
+      })
 
 
 
 
     })
   })
+
+
+
+
+
+
+
 })//end of app

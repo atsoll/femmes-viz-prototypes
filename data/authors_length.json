@@ -1,0 +1,111 @@
+{
+ "data":[
+	{
+		"id" : 306,
+		"nom" : "Longchamp, Charlotte Legrand, épouse Pitel de",
+		"start" : "1687-11-04",
+		"end" : "1687-11-08"
+	},
+	{
+		"id" : 261,
+		"nom" : "Bernard, Catherine",
+		"start" : "1689-02-11",
+		"end" : "1699-08-03"
+	},
+	{
+		"id" : 328,
+		"nom" : "Madame Ulrich",
+		"start" : "1690-05-30",
+		"end" : "1691-11-16"
+	},
+	{
+		"id" : 256,
+		"nom" : "Barbier, Marie-Anne",
+		"start" : "1702-06-03",
+		"end" : "1719-09-23"
+	},
+	{
+		"id" : 262,
+		"nom" : "Gomez, Madeleine-Angélique de",
+		"start" : "1714-04-17",
+		"end" : "1734-12-15"
+	},
+	{
+		"id" : 196,
+		"nom" : "Du Bocage, Anne-Marie",
+		"start" : "1749-07-24",
+		"end" : "1749-08-16"
+	},
+	{
+		"id" : 70,
+		"nom" : "Graffigny, Françoise de",
+		"start" : "1750-06-25",
+		"end" : "1762-12-26"
+	},
+	{
+		"id" : 215,
+		"nom" : "Rozet, Madame",
+		"start" : "1771-03-07",
+		"end" : "1771-03-14"
+	},
+	{
+		"id" : 136,
+		"nom" : "Falconnet, Françoise-Cécile",
+		"start" : "1771-03-07",
+		"end" : "1773-07-03"
+	},
+	{
+		"id" : 195,
+		"nom" : "Saint-Chamond, Claire-Marie Mazarelli, marquise de",
+		"start" : "1771-07-06",
+		"end" : "1771-07-14"
+	},
+	{
+		"id" : 332,
+		"nom" : "Riccoboni, Marie-Jeanne",
+		"start" : "1774-04-26",
+		"end" : "1774-04-26"
+	},
+	{
+		"id" : 93,
+		"nom" : "Raucourt, Françoise-Marie-Antoinette-Josèphe Saucerotte dite Mademoiselle",
+		"start" : "1782-03-01",
+		"end" : "1782-05-03"
+	},
+	{
+		"id" : 161,
+		"nom" : "Montanclos, Marie-Émilie de",
+		"start" : "1783-03-17",
+		"end" : "1783-03-17"
+	},
+	{
+		"id" : 107,
+		"nom" : "Montesson, Charlotte-Jeanne Béraud de La Haie de Riou, comtesse de",
+		"start" : "1785-05-06",
+		"end" : "1785-05-06"
+	},
+	{
+		"id" : 117,
+		"nom" : "Beauharnais, Fanny de",
+		"start" : "1787-01-31",
+		"end" : "1787-01-31"
+	},
+	{
+		"id" : 214,
+		"nom" : "Gouges, Olympe de",
+		"start" : "1789-12-28",
+		"end" : "1790-01-02"
+	},
+	{
+		"id" : 235,
+		"nom" : "Claret de Fleurieu, Aglaé Deslacs, comtesse",
+		"start" : "1791-07-02",
+		"end" : "1791-08-28"
+	},
+	{
+		"id" : 101,
+		"nom" : "Genlis, Stéphanie-Félicité du Crest, comtesse de",
+		"start" : "1791-12-15",
+		"end" : "1791-12-15"
+	}
+]}
