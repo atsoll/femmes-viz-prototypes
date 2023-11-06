@@ -86,6 +86,8 @@ app.controller('ctrl', function($scope, $window, $document) {
       rec_series[i]["values"] = seasons.map(function(z){return {x:z, y:da[z][series[i]]["recettes"]}})
     }
 
+
+
     $scope.model.seasonOverview.reps = {
       data:reps_series,
       barOptions: {
@@ -167,12 +169,33 @@ app.controller('ctrl', function($scope, $window, $document) {
   })
 
 
+  loadData(data_pref + "play_lifetime.json").then(function(d){
 
+    $scope.model.playDuration = {key: "plays", values:d.data}
+    console.log($scope.model.playDuration)
+    $scope.model.playDurationOptions = {
+      chart: {
 
-  //thing I eventually have to deal with - redrawing on scaling
-  //FIX THIS SO THAT IT'S SEASON WISE MAX PERC/VAL FOR RADIUS DUMBO
-function timelineGroupIndivTimescale(data, id, height, seasons) {
+          type: 'multiBarHorizontalChart',
+          height: 1000,
+          margin: {top: 25, right: 10, bottom: 20, left: 95},
+          x: function(d){return d.titre;},
+          y: function(d){return d.diff;},
+          showControls: false,
+          showValues: true,
+          showLegend: false,
+          stacked: false,
+          duration: 500,
+          groupSpacing: 0.5
+      }
+    }
+    $scope.$apply()
+  })
 
+//thi is exlusively for comparisons of similar people
+//size is recette
+//intensity is tickets
+function timelineGroupSharedTimescale(data, id, height) {
   var svg = d3.select("#" + id)
   .append("svg")
   .attr("width", w)
@@ -180,10 +203,14 @@ function timelineGroupIndivTimescale(data, id, height, seasons) {
 
 
   let indiv_height = (height-2*t_margin)/data.main.length
-  let m_r = (indiv_height - (2*indiv_padding))/2
+  let m_r = ((indiv_height - (2*indiv_padding))/2) /1.5 //extra halving to make it look better
 
   let get_r = function(d) {
-    return (d.r_value/max_r)*m_r
+    return (d/data.max_recette)*m_r
+  }
+
+  let get_opacity = function(d) {
+    return d.billets/data.max_billets
   }
 
   var get_y = function(ind) {
@@ -199,6 +226,215 @@ function timelineGroupIndivTimescale(data, id, height, seasons) {
     }
     return purple
   }
+
+  var get_x =  d3.time.scale().domain([Date.parse(data.min_date), Date.parse(data.max_date)]).range([t_margin, w-t_margin])
+
+  var make_point_label = function(po) {
+    return `${po.date}
+            ${po.titre}
+            ${po.recette} livres
+            ${po.billets} billets`
+  }
+
+  //data has to be transformed so that it's not a dict
+  //add an index to make things easier
+  var timelines = svg.selectAll("g")
+  .data(data.main)
+  .enter()
+  .append("g")
+  .attr("class", "indiv-timeline")
+  .attr("height", indiv_height)
+  .attr("width", w)
+  .attr("index", function(d) {
+    return d.index
+  })
+  .attr("id", function(d) {return "t-" + d.index.toString()})
+
+
+
+  var lines = timelines.append("line")
+  .style("stroke", "grey") //add main line
+  .style("stroke-width", 0.5)
+  .style("opacity", 0,8)
+  .attr("class", "timeline-line")
+  .attr("x1", t_margin)
+  .attr("x2", w-t_margin)
+  .attr("y1",  function(d){
+    return get_y(d.index)
+   })
+   .attr("y2",  function(d){
+     return get_y(d.index)
+    })
+  .style("z-index", -1)
+
+  var startpoints = timelines.append("line")
+  .style("stroke", "grey")
+  .style("stroke-width", 0.5)
+  .style("opacity", 0,8)
+  .attr("class", "timeline-startpoint")//add start endpoint
+  .attr("x1", t_margin)
+  .attr("x2", t_margin)
+  .attr("y1",  function(d){
+    return get_y(d.index)-5
+   })
+   .attr("y2",  function(d){
+     return get_y(d.index)+5
+   })
+
+   var start_text = timelines.append("svg:text")
+   .attr("x", t_margin-5)
+   .attr("y", function(d){
+     return get_y(d.index)-10
+   })
+   .text(function(d){
+     return data.min_date.toString()
+   })
+   .attr("fill", "grey")
+   .style("opacity", 0,8)
+   .attr("font-size", 8)
+
+   var endpoints = timelines.append("line")
+   .style("stroke", "grey")
+   .style("stroke-width", 0.5)
+   .style("opacity", 0,8)
+   .attr("class", "timeline-endpoint")
+   .attr("x1", w-t_margin)
+   .attr("x2", w-t_margin)
+   .attr("y1",  function(d){
+     return get_y(d.index)-5
+    })
+    .attr("y2",  function(d){
+      return get_y(d.index)+5
+    })
+
+    var end_text = timelines.append("svg:text")
+   .attr("x", w-(t_margin*1.5))
+   .attr("y", function(d){
+     return get_y(d.index)-10
+   })
+   .text(function(d){
+     return data.min_date.toString()
+   })
+   .attr("fill", "grey")
+   .style("opacity", 0,8)
+   .attr("font-size", 8)
+
+   var labels = timelines.append("svg:text")
+   .attr("x", 15)
+   .attr("y", function(d){
+     return get_y(d.index)-20
+   })
+   .text(function(d){
+     return d.label
+   })
+   .attr("fill", "grey")
+   .style("opacity", 0,8)
+   .attr("font-size", 8)
+
+
+
+   //this is the worst possible hack but my brain is too tired to figure this out
+   for(let i=0;i<data.main.length;i++) {
+     var tl = d3.select(`#t-${data.main[i].index.toString()}`)
+    for(let j=0;j<data.main[i].points.length;j++) {
+
+      tl.append("circle")
+      .attr("cx",get_x(Date.parse(data.main[i].points[j].date)))
+      .attr("cy", get_y(data.main[i].index))
+      .attr("r", get_r(data.main[i].points[j].recette))
+      .attr("stroke", function(){
+        if(data.main[i].points[j].creation){
+          return "black";
+        }
+        return "rgba(2,2,2,0)"
+      })
+      .attr("stroke-width", 2)
+      .attr("fill", get_colour(data.main[i].points[j].genre))
+      .attr("fill-opacity", get_opacity(data.main[i].points[j]))
+      .append("svg:title")
+      .text(make_point_label(data.main[i].points[j]))
+    }
+   }
+
+
+   //not very d3 ish but easier than fetching
+   /*for(let i=0;i<data.main.length;i++) {
+     console.log(d3.select(`#t-${data.main[i].index.toString()}`))
+     d3.select(`#t-${data.main[i].index.toString()}`)
+
+     .data(data.main[i].points)
+     .enter()
+
+     .append("circle")
+     .attr("cx", function(d){
+       console.log("here")
+       return get_x(Date.parse(d.date))
+     })
+     .attr("cy", get_y(data.main[i].index))
+     .attr("r", function(d){
+       return get_r(d.recette)
+     })
+     .attr("stroke", function(d){
+       if(d.creation){
+         return "black";
+       }
+       return get_colour(d.genre)
+     })
+     .attr("fill", function(d){
+       return get_colour(d.genre)
+     })
+     .attr("fill-opacity", function(d){
+       return get_opacity(d)
+     })
+     .append("svg:title")
+     .text(function(d){
+        return make_point_label(d)
+     })
+
+   }*/
+
+
+
+
+}
+
+
+
+
+  //thing I eventually have to deal with - redrawing on scaling
+  //FIX THIS SO THAT IT'S SEASON WISE MAX PERC/VAL FOR RADIUS DUMBO
+  //ok but global could work for smaller comps
+function timelineGroupIndivTimescale(data, id, height, seasons) {
+
+  var svg = d3.select("#" + id)
+  .append("svg")
+  .attr("width", w)
+  .attr("height", height)
+
+
+  let indiv_height = (height-2*t_margin)/data.main.length
+  let m_r = (indiv_height - (2*indiv_padding))/2
+
+  let get_r = function(d) {
+    return (d.recette/max_r)*m_r
+  }
+
+  var get_y = function(ind) {
+    return t_margin + ind*indiv_height + indiv_padding + m_r
+  }
+
+
+  var get_colour = function(d) {
+    if(d.includes("comédie")){
+      return red
+    }
+    else if(d.includes("tragédie")) {
+      return blue
+    }
+    return purple
+  }
+
+
 
   //data has to be transformed so that it's not a dict
   //add an index to make things easier
@@ -281,6 +517,9 @@ function timelineGroupIndivTimescale(data, id, height, seasons) {
    .attr("fill", "grey")
    .style("opacity", 0,8)
    .attr("font-size", 8)
+
+
+
 
   /* var circles = timelines.append("svg:text")
    .data()
@@ -396,8 +635,8 @@ function timelineGroupIndivTimescale(data, id, height, seasons) {
       //this way of structuring currently includes nothing lines
       //I kinda like this for negative knowledge reasons
       //but possible remove later
-      timelineGroupIndivTimescale(rec_dat, "season-timeline-rec", 3000, d1.seasons)
-      timelineGroupIndivTimescale(perc_dat, "season-timeline-perc", 3000, d1.seasons)
+      //timelineGroupIndivTimescale(rec_dat, "season-timeline-rec", 3000, d1.seasons)
+      //timelineGroupIndivTimescale(perc_dat, "season-timeline-perc", 3000, d1.seasons)
 
 
 
@@ -621,6 +860,10 @@ function timelineGroupIndivTimescale(data, id, height, seasons) {
 
 
 
+    })
+
+    loadData(data_pref+"261_262_256_tl.json").then(function(d3){
+      timelineGroupSharedTimescale(d3, "women-contemp-comp", 300)
     })
   })
 
