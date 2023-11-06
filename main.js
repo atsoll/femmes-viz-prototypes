@@ -203,7 +203,7 @@ function timelineGroupSharedTimescale(data, id, height) {
 
 
   let indiv_height = (height-2*t_margin)/data.main.length
-  let m_r = ((indiv_height - (2*indiv_padding))/2) /1.5 //extra halving to make it look better
+  let m_r = ((indiv_height - (2*indiv_padding))/2) //extra halving to make it look better
 
   let get_r = function(d) {
     return (d/data.max_recette)*m_r
@@ -322,7 +322,7 @@ function timelineGroupSharedTimescale(data, id, height) {
    var labels = timelines.append("svg:text")
    .attr("x", 15)
    .attr("y", function(d){
-     return get_y(d.index)-20
+     return get_y(d.index)-25
    })
    .text(function(d){
      return d.label
