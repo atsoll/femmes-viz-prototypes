@@ -373,15 +373,17 @@ def make_auth_tl_data(auth_list, dat_cur):
 
 
 def make_play_dur_data(dat_cur):
-    dat_cur.execute("""select max(date), min(date), max(date)-min(date)+1,fem, genre, titre from (
-                        select bool_or(féminin) as fem, pièces.id as pid, genre, titre, représentations.id_séance as s from pièces join représentations on id_pièce = pièces.id join attributions on attributions.id_pièce = pièces.id join auteurs on id_auteur = auteurs.id
-                        group by pièces.id, représentations.id) as t
-                        join séances on s= séances.id
-                        group by pid, titre, fem, genre
-                        order by min(date)""")
-    res = {"data": [{"max":str(x[0]), "min":str(x[1]), "diff":x[2], "fem":x[3], "genre":x[4], "titre":x[5]} for x in dat_cur.fetchall()]}
+    dat_cur.execute("select max(date), min(date), max(date)-min(date)+1, genre, titre, pièces.id from pièces join représentations on id_pièce = pièces.id join séances on représentations.id_séance= séances.id group by pièces.id, genre, titre order by min(date)")
+    res = {"data": [{"max":str(x[0]), "min":str(x[1]), "diff":x[2], "genre":x[3], "titre":x[4], "id":x[5]} for x in dat_cur.fetchall()]}
 
-    #render in matplotlib
+    #have to do this separately b/c of the possibility of multiple authorship ugh
+    for i in range(len(res["data"])):
+        dat_cur.execute("select array_agg(nom), bool_or(féminin) from auteurs join  attributions on id_auteur = auteurs.id where id_pièce = %s", (res["data"][i]["id"],))
+        dat = dat_cur.fetchone()
+        res["data"][i]["auth"] = ' &'.join(dat[0]) if dat[0] is not None else "inconnu"
+        res["data"][i]["fem"] = dat[1] if dat[1] is not None else False
+
+
 
 
 

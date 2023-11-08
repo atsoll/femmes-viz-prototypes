@@ -88,6 +88,7 @@ app.controller('ctrl', function($scope, $window, $document) {
 
 
 
+
     $scope.model.seasonOverview.reps = {
       data:reps_series,
       barOptions: {
@@ -171,24 +172,61 @@ app.controller('ctrl', function($scope, $window, $document) {
 
   loadData(data_pref + "play_lifetime.json").then(function(d){
 
-    $scope.model.playDuration = {key: "plays", values:d.data}
-    console.log($scope.model.playDuration)
+    $scope.model.playDuration = [{key: "plays", values:d.data}]
+    let colours = Object.values(d.data).map(function(x){
+
+      if(x.genre==null){
+        return 'grey'
+      }
+      else if(x.genre.includes("comédie")) {
+
+        return "red"
+      }
+      else if(x.genre.includes("tragédie")) {
+        return "blue"
+      }
+      return "purple"
+    })
+
+    //this is such a cheat but whatever
+
     $scope.model.playDurationOptions = {
       chart: {
 
           type: 'multiBarHorizontalChart',
-          height: 1000,
+          height: 7000,
           margin: {top: 25, right: 10, bottom: 20, left: 95},
-          x: function(d){return d.titre;},
+          x: function(d){return d.id;},
           y: function(d){return d.diff;},
+          barColor: colours,
           showControls: false,
           showValues: true,
           showLegend: false,
           stacked: false,
           duration: 500,
-          groupSpacing: 0.5
-      }
+          groupSpacing: 0.7,
+          tooltip:{
+           contentGenerator: function (e) {
+            let mult = e.data.diff > 1? "s" : ''
+            return `<b>${e.data.titre}</b></br><i>${e.data.auth}</i></br>${e.data.min} / ${e.data.max}</br>${e.data.diff} jour${mult}`
+            }
+          },
+          xAxis: {
+            tickFormat: function(x,e){
+              if(d.data[e].fem) {
+                return "•"
+              }
+              else {
+                return " "
+              }
+            }
+          },
+
+
+
+
     }
+  }
     $scope.$apply()
   })
 

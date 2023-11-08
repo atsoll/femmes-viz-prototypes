@@ -1,0 +1,18 @@
+.viz-prototype-section {
+  margin-bottom: 8vh;
+}
+
+#reps-season-barchart {
+  .nv-bar {
+    text {
+      display: none;
+    }
+  }
+
+  .fem-idic {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+  }
+
+}
