@@ -241,14 +241,16 @@ function timelineGroupSharedTimescale(data, id, height) {
 
 
   let indiv_height = (height-2*t_margin)/data.main.length
-  let m_r = ((indiv_height - (2*indiv_padding))/2) //extra halving to make it look better
+  let m_r = ((indiv_height - (2*indiv_padding))/3) //extra halving to make it look better
 
   let get_r = function(d) {
-    return (d/data.max_recette)*m_r
+    //cheat so we don't get invisible circles
+    return (Math.max(d,10)/data.max_recette)*m_r
   }
 
   let get_opacity = function(d) {
-    return d.billets/data.max_billets
+    //cheat so we don't get invisible circles
+    return Math.max(d.billets, 10)/data.max_billets
   }
 
   var get_y = function(ind) {
@@ -351,7 +353,7 @@ function timelineGroupSharedTimescale(data, id, height) {
      return get_y(d.index)-10
    })
    .text(function(d){
-     return data.min_date.toString()
+     return data.max_date.toString()
    })
    .attr("fill", "grey")
    .style("opacity", 0,8)
@@ -900,9 +902,15 @@ function timelineGroupIndivTimescale(data, id, height, seasons) {
 
     })
 
-    loadData(data_pref+"261_262_256_tl.json").then(function(d3){
+  /*  loadData(data_pref+"261_262_256_tl.json").then(function(d3){
       timelineGroupSharedTimescale(d3, "women-contemp-comp", 300)
+    })*/
+
+    loadData(data_pref+"outfile.json").then(function(d3){
+      timelineGroupSharedTimescale(d3, "all-women-comp", 1300)
     })
+
+
   })
 
 
